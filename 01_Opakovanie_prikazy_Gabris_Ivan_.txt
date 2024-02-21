@@ -1,0 +1,41 @@
+01. SELECT 'movies' AS category, COUNT(id) AS count FROM movies
+        UNION
+        SELECT 'users' AS category, COUNT(id) AS count FROM users
+        UNION
+        SELECT 'ratings' AS category, COUNT(id) AS count FROM ratings;
+
+02. INSERT INTO `movies` (`id`, `title`, `release_year`) VALUES (NULL, 'Nieco nove', '2024');
+
+03. UPDATE `movies` SET `title` = 'Nieco nove2', `release_year` = '2025' WHERE `movies`.`id` = 3953;
+
+
+04. SELECT * FROM `movies` WHERE release_year > 2020;
+
+05. SELECT movies.* FROM movies
+        LEFT JOIN ratings ON movies.id = ratings.movie_id WHERE ratings.id IS NULL
+
+06. SELECT genres.name AS Nazov_zanru, COUNT(genres_movies.movie_id) AS Pocet FROM genres
+        INNER JOIN genres_movies ON genres.id = genres_movies.genre_id GROUP BY genres.name;
+
+07. SELECT genres.name AS Nazov_zanru, COUNT(genres_movies.movie_id) AS Pocet FROM genres
+        INNER JOIN genres_movies ON genres.id = genres_movies.genre_id
+        GROUP BY genres.name
+        HAVING `Pocet` > 1000
+        ORDER BY `Pocet` ASC;
+
+###########################################
+#ASC     VZOSTUPNE
+#DESC    ZOSTUPNE
+##########################################
+
+08. SELECT users.id AS POuzivatel, COUNT(ratings.id) AS Pocet FROM ratings
+        INNER JOIN users ON ratings.user_id = users.id
+        GROUP BY users.id
+        ORDER BY `Pocet` DESC
+
+09.
+
+10. SELECT occupations.name AS Nazov_povolania, count(ratings.id) AS Pocet_hodnoteni FROM ratings
+        INNER JOIN users ON ratings.user_id = users.id
+        INNER JOIN occupations ON users.occupation_id = occupations.id
+        GROUP BY users.id;
