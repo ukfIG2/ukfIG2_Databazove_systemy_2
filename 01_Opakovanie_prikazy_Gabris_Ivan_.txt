@@ -9,13 +9,16 @@
 03. UPDATE `movies` SET `title` = 'Nieco nove2', `release_year` = '2025' WHERE `movies`.`id` = 3953;
 
 
-04. SELECT * FROM `movies` WHERE release_year > 2020;
+04. SELECT * FROM `movies`
+        WHERE release_year > 2020;
 
 05. SELECT movies.* FROM movies
-        LEFT JOIN ratings ON movies.id = ratings.movie_id WHERE ratings.id IS NULL
+        LEFT JOIN ratings ON movies.id = ratings.movie_id
+        WHERE ratings.id IS NULL
 
 06. SELECT genres.name AS Nazov_zanru, COUNT(genres_movies.movie_id) AS Pocet FROM genres
-        INNER JOIN genres_movies ON genres.id = genres_movies.genre_id GROUP BY genres.name;
+        INNER JOIN genres_movies ON genres.id = genres_movies.genre_id
+        GROUP BY genres.name;
 
 07. SELECT genres.name AS Nazov_zanru, COUNT(genres_movies.movie_id) AS Pocet FROM genres
         INNER JOIN genres_movies ON genres.id = genres_movies.genre_id
@@ -33,9 +36,78 @@
         GROUP BY users.id
         ORDER BY `Pocet` DESC
 
-09.
+09.  SELECT movies.title AS Nazov, movies.release_year AS Rok_vydania, AVG(ratings.rating) AS Priemerne_hodnotenie
+        FROM movies
+        LEFT JOIN ratings ON ratings.movie_id = movies.id
+        GROUP BY movies.id, movies.title, movies.release_year
+        ORDER BY Rok_vydania ASC, Priemerne_hodnotenie DESC;
+
 
 10. SELECT occupations.name AS Nazov_povolania, count(ratings.id) AS Pocet_hodnoteni FROM ratings
         INNER JOIN users ON ratings.user_id = users.id
         INNER JOIN occupations ON users.occupation_id = occupations.id
         GROUP BY users.id;
+
+11. SELECT ratings.movie_id, movies.title, AVG(ratings.rating) AS average_rating
+        FROM ratings
+        INNER JOIN movies ON ratings.movie_id = movies.id
+        GROUP BY ratings.movie_id, movies.title
+        HAVING average_rating > (SELECT AVG(rating) FROM ratings);
+
+12. SELECT users.id AS Pouzivatel, AVG(ratings.rating) AS average_rating FROM ratings
+        INNER JOIN genres_movies ON ratings.movie_id = genres_movies.movie_id
+        INNER JOIN users ON users.id = ratings.user_id
+        WHERE genres_movies.genre_id = 5 # Comedy
+        GROUP BY users.id;
+
+13. SELECT movie_id FROM tags
+        WHERE movie_id IN (
+        SELECT movie_id FROM tags
+        WHERE LOWER(tags) LIKE '%good%')
+        AND movie_id IN (
+        SELECT movie_id FROM tags
+        WHERE LOWER(tags) LIKE '%bad%')
+        GROUP BY movie_id;
+
+14. SELECT genres.name AS Nazov_zanru, COUNT(genres_movies.movie_id) AS Pocet, AVG(ratings.rating)
+        FROM genres
+        INNER JOIN genres_movies ON genres.id = genres_movies.genre_id
+        INNER JOIN movies ON movies.id = genres_movies.movie_id
+        INNER JOIN ratings ON movies.id = ratings.movie_id
+        WHERE movies.release_year >= 2000 GROUP BY genres.name
+        HAVING Pocet > 10
+        ORDER BY `AVG(ratings.rating)` DESC
+
+15a.  Vypíšte všetky informácie (názov, rok vydania, počet hodnotení, hodnotenie)
+      pre film(y) s najvyšším počtom hodnotení(berem to ako pre MAX()).
+
+        SELECT movies.title AS Nazov, movies.release_year AS Rok_vydania,
+        COUNT(ratings.id) AS Pocet_hodnoteni, AVG(ratings.rating) AS Priemerne_hodnotenie
+        FROM `movies`
+        INNER JOIN ratings ON ratings.movie_id = movies.id
+        GROUP BY movies.id
+        HAVING Pocet_hodnoteni = (SELECT MAX(cnt) FROM (SELECT COUNT(id) AS cnt FROM ratings GROUP BY movie_id) AS max_ratings);
+
+15b.  Vypíšte všetky informácie (názov, rok vydania, počet hodnotení, hodnotenie)
+      pre film(y) s najnižším hodnotením, zoradené vzostupne podľa ID filmu (ak
+      existuje viacero filmov s najnižším hodnotením, vypíšte všetky).
+
+        SELECT movies.title AS Nazov, movies.release_year AS Rok_vydania,
+        COUNT(ratings.id) AS Pocet_hodnoteni, AVG(ratings.rating) AS Priemerne_hodnotenie
+        FROM `movies`
+        INNER JOIN ratings ON ratings.movie_id = movies.id
+        GROUP BY movies.id
+        HAVING Pocet_hodnoteni = (SELECT MIN(cnt) FROM (SELECT COUNT(id) AS cnt FROM ratings GROUP BY movie_id) AS max_ratings)
+        ORDER BY movies.id ASC
+
+15c.  Na záver, platí hypotéza pre databázu MovieLens?
+        HYPOTEZA "Dalo by sa očakávať, že film s najvyšším počtom používateľských
+        hodnotení je buď najlepšie hodnotený film, alebo možno film s najnižším
+        hodnotením. Poďme zistiť, či je to pravda"
+                Záver podľa údajov z databázy "MovieLens" je taký, že film s najvýšším počtom recenzií ma priemer 4.32 a viacero filmov s najnižžím počtom recenzií má priemer od 1 až po 5 v hodnotení.
+                Je film s najvyšším počtom hodnotení najlepší alebo najhorší? Neviem.
+
+
+
+
+
