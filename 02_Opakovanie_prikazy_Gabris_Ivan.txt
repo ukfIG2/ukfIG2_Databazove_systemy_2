@@ -1,0 +1,70 @@
+01. SELECT customers.contactLastName AS Priezvisko, customers.contactFirstName AS Meno FROM `payments`
+        INNER JOIN customers ON payments.customerNumber = customers.customerNumber
+        ORDER BY amount DESC
+        LIMIT 1;
+
+02. SELECT * FROM products
+        WHERE buyPrice > (
+        SELECT AVG(buyPrice) FROM `products`);
+
+03. SELECT * FROM payments WHERE amount > (
+        SELECT amount AS Suma FROM `payments`
+        WHERE customerNumber = 250
+        ORDER BY amount DESC
+        LIMIT 1)
+        ORDER BY amount ASC;
+
+04. SELECT * FROM payments
+        WHERE paymentDate > (
+            SELECT MIN(paymentDate) AS EarliestPaymentDate
+            FROM payments
+            WHERE customerNumber = 250
+        )
+        ORDER BY amount ASC;
+
+05. SELECT * FROM payments
+        WHERE paymentDate > (
+            SELECT MAX(paymentDate) AS EarliestPaymentDate
+            FROM payments
+            WHERE customerNumber = 250
+        )
+        ORDER BY amount ASC;
+
+06. SELECT customerName AS PriezviskoMeno, country AS Krajina, creditLimit AS LimitKreditu
+        FROM customers
+        WHERE creditLimit > (
+            SELECT AVG(creditLimit)
+            FROM customers AS c2
+            WHERE c2.country = customers.country
+        );
+
+07. SELECT employees.firstName, employees.lastName FROM employees
+        WHERE reportsTo = (
+            SELECT reportsTo FROM employees
+            WHERE  employeeNumber = 1337
+        ) AND officeCode = (SELECT officeCode FROM employees
+            WHERE employeeNumber = 1337
+        ) AND employeeNumber != 1337;
+
+08. SELECT firstName, lastName FROM employees
+        WHERE reportsTo = ( SELECT reportsTo FROM employees
+            WHERE employeeNumber IN (1611, 1612) LIMIT 1 )
+        AND officeCode = ( SELECT officeCode FROM employees
+            WHERE employeeNumber IN (1611, 1612) LIMIT 1 )
+        AND employeeNumber NOT IN (1611, 1612);
+
+09. SELECT employeeNumber, firstName, lastName, jobTitle AS Pozicia FROM employees
+        WHERE jobTitle = (SELECT jobTitle FROM  employees
+            WHERE employeeNumber = 1621);
+
+10. SELECT products.productName AS NazovTovaru, products.buyPrice AS NakupnaCena FROM products
+        INNER JOIN productlines ON products.productLine = productlines.productLine
+        WHERE products.buyPrice > ( SELECT AVG(buyPrice) FROM products AS p2
+            WHERE p2.productLine = products.productLine );
+
+11. SELECT country FROM customers
+        GROUP BY country
+        HAVING AVG(creditLimit) > (
+            SELECT AVG(creditLimit) FROM customers
+            WHERE country IN ('USA', 'Japan')
+        );
