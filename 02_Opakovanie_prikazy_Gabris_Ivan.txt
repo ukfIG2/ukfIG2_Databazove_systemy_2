@@ -1,7 +1,8 @@
 01. SELECT customers.contactLastName AS Priezvisko, customers.contactFirstName AS Meno FROM `payments`
         INNER JOIN customers ON payments.customerNumber = customers.customerNumber
-        ORDER BY amount DESC
-        LIMIT 1;
+        WHERE amount = (SELECT MAX(amount) from payments)
+            #ORDER BY amount DESC
+            #LIMIT 1;
 
 02. SELECT * FROM products
         WHERE buyPrice > (
@@ -15,16 +16,16 @@
         ORDER BY amount ASC;
 
 04. SELECT * FROM payments
-        WHERE paymentDate > (
-            SELECT MIN(paymentDate) AS EarliestPaymentDate
+        WHERE paymentDate > ANY (
+            SELECT paymentDate
             FROM payments
             WHERE customerNumber = 250
         )
         ORDER BY amount ASC;
 
-05. SELECT * FROM payments
-        WHERE paymentDate > (
-            SELECT MAX(paymentDate) AS EarliestPaymentDate
+05. SELECT *    FROM payments
+        WHERE paymentDate > ALL (
+            SELECT paymentDate
             FROM payments
             WHERE customerNumber = 250
         )
@@ -68,3 +69,30 @@
             SELECT AVG(creditLimit) FROM customers
             WHERE country IN ('USA', 'Japan')
         );
+
+12. SELECT DISTINCT customers.contactFirstName, customers.contactLastName FROM orders
+        INNER JOIN orderdetails USING(orderNumber)
+        INNER JOIN customers ON orders.customerNumber = customers.customerNumber
+        WHERE orderNumber = (
+                SELECT orderNumber FROM orderdetails
+                GROUP BY orderNumber
+                ORDER BY SUM(quantityOrdered * priceEach) DESC
+                LIMIT 1
+        );
+
+13. SELECT /*officeCode,*/ COUNT(employeeNumber) AS Pocet FROM `employees`
+        GROUP BY officeCode
+        ORDER BY Pocet DESC
+        LIMIT 1;
+
+    SELECT MAX(employee_count) AS max_employees FROM(
+        SELECT officeCode,*COUNT(employeeNumber) AS Pocet FROM `employees`
+        GROUP BY officeCode)
+
+14. SELECT orderDate, COUNT(orderNumber) AS Pocet FROM `orders`
+        GROUP BY orderDate
+        ORDER BY Pocet DESC
+        LIMIT 1;
+
+15. SELECT productCode, MAX(priceEach) FROM `orderdetails`
+        GROUP BY productCode;
