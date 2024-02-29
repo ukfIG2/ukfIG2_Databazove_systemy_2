@@ -1,3 +1,4 @@
+******************SQL 1***********************
 01. SELECT customers.contactLastName AS Priezvisko, customers.contactFirstName AS Meno FROM `payments`
         INNER JOIN customers ON payments.customerNumber = customers.customerNumber
         WHERE amount = (SELECT MAX(amount) from payments)
@@ -96,3 +97,68 @@
 
 15. SELECT productCode, MAX(priceEach) FROM `orderdetails`
         GROUP BY productCode;
+
+******************SQL 2************************************
+
+01. SELECT AVG(Pocet) AS Priemer
+        FROM (
+            SELECT orderNumber, COUNT(*) AS Pocet
+            FROM orderdetails
+            GROUP BY orderNumber
+        ) AS subquery;
+
+02.     SELECT c.customerName AS MenoZakaznika, o.orderNumber AS CisloObjednavky,
+                CASE WHEN o.comments IS NOT NULL THEN 'áno' ELSE 'nie' END AS PridalKoment
+                FROM customers c
+                JOIN orders o ON c.customerNumber = o.customerNumber;
+
+03.     SELECT COUNT(*) AS PocetAno
+                FROM (
+                SELECT c.customerName AS MenoZakaznika, o.orderNumber AS CisloObjednavky,
+                        CASE WHEN o.comments IS NOT NULL THEN 'áno' ELSE 'nie' END AS PridalKoment
+                FROM customers c
+                JOIN orders o ON c.customerNumber = o.customerNumber
+                ) AS Subquery
+                WHERE PridalKoment = 'áno';
+
+04.     SELECT orders.status AS Status_objednavky, COUNT(*) AS Pocet_objednavok,
+                (COUNT(*) * 100 / (SELECT COUNT(*) FROM orders)) AS Percentualny_podiel FROM orders
+                GROUP BY Status_objednavky
+                UNION
+        SELECT 'All' AS Status_objednavky, COUNT(*) AS Pocet_objednavok, 100.0 AS Percentualny_podiel FROM orders;
+
+05.     SELECT e.employeeNumber AS EmployeeID, e.lastName AS LastName, e.firstName AS FirstName,
+                COUNT(subordinate.employeeNumber) AS PocetPodriadenych FROM employees e
+                LEFT JOIN employees subordinate ON e.employeeNumber = subordinate.reportsTo
+                GROUP BY e.employeeNumber, e.lastName, e.firstName;
+
+06.     SELECT c.customerNumber, c.customerName,
+                SUM(CASE WHEN YEAR(p.paymentDate) = 2003 THEN p.amount ELSE 0 END) AS Platba_2003,
+                SUM(CASE WHEN YEAR(p.paymentDate) = 2004 THEN p.amount ELSE 0 END) AS Platba_2004,
+                SUM(CASE WHEN YEAR(p.paymentDate) = 2005 THEN p.amount ELSE 0 END) AS Platba_2005
+                FROM customers c
+                JOIN payments p ON c.customerNumber = p.customerNumber
+                WHERE YEAR(p.paymentDate) IN (2003, 2004, 2005)
+                GROUP BY c.customerNumber, c.customerName;
+
+07.     CREATE VIEW NajpredavanejsieProdukty AS
+                SELECT p.productCode, p.productName, SUM(od.quantityOrdered) AS Pocet FROM orderdetails od
+                INNER JOIN orders o USING(orderNumber)
+                INNER JOIN products p USING(productCode)
+                WHERE o.status = 'Shipped'
+                GROUP BY p.productCode, p.productName
+                ORDER BY Pocet DESC
+                LIMIT 10;
+
+08.     SELECT * FROM NajpredavanejsieProdukty;
+
+09.     SELECT '2_adresy' AS Typ_adries, COUNT(CASE WHEN addressLine1 IS NOT NULL AND addressLine2 IS NOT NULL THEN 1 END) AS Pocet_zakaznikov
+                FROM customers
+                UNION
+                SELECT '1_adresa' AS Typ_adries, COUNT(CASE WHEN (addressLine1 IS NOT NULL AND addressLine2 IS NULL) OR (addressLine1 IS NULL AND addressLine2 IS NOT NULL) THEN 1 END) AS Pocet_zakaznikov
+                FROM customers
+                ORDER BY Typ_adries ASC;
+
+
+
+
